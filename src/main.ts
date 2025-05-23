@@ -5,6 +5,28 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Configuração do CORS
+  app.enableCors({
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3001', 
+      'http://localhost:8081', 
+      'https://vercel.app',
+      'https://*.vercel.app',
+      /https:\/\/.*\.vercel\.app$/,
+    ],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Origin',
+      'X-Requested-With',
+      'Content-Type',
+      'Accept',
+      'Authorization',
+      'authorization'
+    ],
+    credentials: true,
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Rumon API')
     .setDescription('API do sistema Rumon para gerenciamento de repúblicas estudantis')
