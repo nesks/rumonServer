@@ -7,10 +7,22 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Rumon API')
-    .setDescription('API do sistema Rumon')
+    .setDescription('API do sistema Rumon para gerenciamento de repúblicas estudantis')
     .setVersion('1.0')
-    .addTag('users')
-    .addTag('auth')
+    .addTag('users', 'Endpoints para gerenciamento de usuários')
+    .addTag('auth', 'Endpoints para autenticação')
+    .addTag('republics', 'Endpoints para gerenciamento de repúblicas')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
     .build();
   
   const document = SwaggerModule.createDocument(app, config);

@@ -5,12 +5,14 @@ import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+import { RepublicsService } from '../republics/republics.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private republicsService: RepublicsService,
   ) {}
 
   async preRegister(createUserDto: CreateUserDto) {
@@ -23,6 +25,14 @@ export class UsersService {
 
     if (existingUser) {
       throw new ConflictException('Email ou telefone já cadastrado');
+    }
+
+    if (createUserDto.republic_id) {
+      try {
+        await this.republicsService.findOne(createUserDto.republic_id);
+      } catch (error) {
+        throw new NotFoundException('República não encontrada');
+      }
     }
 
     const activationToken = crypto.randomBytes(32).toString('hex');
