@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Exclude } from 'class-transformer';
+import { Republic } from '../../republics/entities/republic.entity';
 
 @Entity('users')
 export class User {
@@ -24,6 +25,13 @@ export class User {
 
   @Column({ nullable: true })
   activationToken: string;
+
+  @ManyToOne(() => Republic, republic => republic.users)
+  @JoinColumn({ name: 'republic_id' })
+  republic: Republic;
+
+  @Column({ nullable: true })
+  republic_id: string;
 
   @CreateDateColumn()
   createdAt: Date;
