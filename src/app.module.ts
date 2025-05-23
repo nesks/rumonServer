@@ -16,17 +16,32 @@ import { AppService } from './app.service';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'mysql',
-        host: configService.get('DB_HOST', 'localhost'),
-        port: configService.get('DB_PORT', 3306),
-        username: configService.get('DB_USERNAME', 'rumon'),
-        password: configService.get('DB_PASSWORD', 'rumon'),
-        database: configService.get('DB_DATABASE', 'rumon'),
-        entities: [User, Republic],
-        synchronize: configService.get('NODE_ENV') !== 'production',
-        charset: 'utf8mb4',
-      }),
+      useFactory: (configService: ConfigService) => {
+        const databaseUrl = configService.get('DATABASE_URL');
+        
+        if (databaseUrl) {
+          // Configuração para usar DATABASE_URL (Neon/Vercel)
+          return {
+            type: 'postgres',
+            url: databaseUrl,
+            entities: [User, Republic],
+            synchronize: configService.get('NODE_ENV') !== 'production',
+            ssl: configService.get('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
+          };
+        }
+        
+        // Configuração fallback para desenvolvimento local
+        return {
+          type: 'postgres',
+          host: configService.get('DB_HOST', 'localhost'),
+          port: configService.get('DB_PORT', 5432),
+          username: configService.get('DB_USERNAME', 'postgres'),
+          password: configService.get('DB_PASSWORD', 'postgres'),
+          database: configService.get('DB_DATABASE', 'rumon'),
+          entities: [User, Republic],
+          synchronize: configService.get('NODE_ENV') !== 'production',
+        };
+      },
       inject: [ConfigService],
     }),
     UsersModule,

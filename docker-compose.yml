@@ -1,23 +1,23 @@
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: rumon-mysql
-    ports:
-      - "6033:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - rumon-network
-    healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:3306"]
-        interval: 10s
-        timeout: 3s
-        retries: 15
+  # mysql:
+  #   image: mysql:8.0
+  #   container_name: rumon-mysql
+  #   ports:
+  #     - "6033:3306"
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root
+  #     MYSQL_DATABASE: ${DB_DATABASE}
+  #     MYSQL_USER: ${DB_USERNAME}
+  #     MYSQL_PASSWORD: ${DB_PASSWORD}
+  #   volumes:
+  #     - mysql_data:/var/lib/mysql
+  #   networks:
+  #     - rumon-network
+  #   healthcheck:
+  #       test: ["CMD", "curl", "-f", "http://localhost:3306"]
+  #       interval: 10s
+  #       timeout: 3s
+  #       retries: 15
   api:
     build:
       context: .
@@ -26,20 +26,16 @@ services:
     ports:
       - "3001:3000"
     environment:
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_DATABASE=${DB_DATABASE}
+      - DATABASE_URL=${DATABASE_URL}
       - NODE_ENV=${NODE_ENV}
       - JWT_SECRET=${JWT_SECRET}
-    depends_on:
-      - mysql
+    # depends_on:
+    #   - mysql
     networks:
       - rumon-network
 
-volumes:
-  mysql_data:
+# volumes:
+#   mysql_data:
 
 networks:
   rumon-network:
