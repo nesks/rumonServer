@@ -96,3 +96,128 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+# Rumon API
+
+API do sistema Rumon para gerenciamento de repúblicas estudantis, construída com NestJS, TypeORM e PostgreSQL.
+
+## 🚀 Características
+
+- **Autenticação JWT** - Sistema seguro de login e autenticação
+- **Gestão de Usuários** - Pré-cadastro e ativação por token
+- **Gestão de Repúblicas** - CRUD completo de repúblicas estudantis
+- **Documentação Swagger** - API totalmente documentada
+- **Banco Flexível** - Suporte a PostgreSQL local e Neon (nuvem)
+- **Docker Ready** - Configuração completa com Docker
+
+
+# Executar em modo desenvolvimento
+npm run start:dev
+```
+
+## 📦 Instalação e Execução
+
+### Pré-requisitos
+- Docker e Docker Compose
+- Node.js 20+ (para desenvolvimento local)
+
+### Execução com Docker
+
+```bash
+# Clone o repositório
+git clone <seu-repositorio>
+cd rumon-server
+
+# Configure o .env
+
+# Execute com banco local
+docker compose up
+
+# OU execute apenas a API (se usando Neon)
+docker compose up api
+```
+
+### Desenvolvimento Local
+
+```bash
+# Instalar dependências
+npm install
+
+# Configurar banco local e .env
+# Executar em modo desenvolvimento
+npm run start:dev
+```
+
+## 📚 API Documentation
+
+Após executar a aplicação, acesse:
+
+- **Swagger UI**: http://localhost:3001/api
+- **API Base**: http://localhost:3001
+
+### Principais Endpoints
+
+- `POST /auth/login` - Fazer login
+- `POST /users/pre-register` - Pré-cadastrar usuário
+- `POST /users/set-password/:token` - Definir senha
+- `GET /republics` - Listar repúblicas
+- `POST /republics` - Criar república (autenticado)
+
+## 🔐 Autenticação
+
+1. Faça login em `/auth/login`
+2. Use o token retornado no header: `Authorization: Bearer <token>`
+3. No Swagger: clique em "Authorize" e cole o token
+
+## 🛠️ Scripts Disponíveis
+
+```bash
+# Desenvolvimento
+npm run start:dev
+
+# Produção
+npm run build
+npm run start:prod
+
+# Testes
+npm run test
+npm run test:e2e
+
+# Linting
+npm run lint
+```
+
+## 🐳 Docker Commands
+
+```bash
+# Executar tudo
+docker compose up
+
+# Apenas API (se usando Neon)
+docker compose up api
+
+# Rebuild
+docker compose build
+
+# Ver logs
+docker compose logs -f api
+
+# Parar tudo
+docker compose down
+```
+
+## 🔧 Estrutura do Projeto
+
+```
+src/
+├── auth/           # Módulo de autenticação
+├── users/          # Módulo de usuários
+├── republics/      # Módulo de repúblicas
+├── config/         # Configurações
+├── app.module.ts   # Módulo principal
+└── main.ts         # Arquivo de entrada
+```
+
+## 📄 License
+
+Este projeto está licenciado sob a [MIT License](https://opensource.org/licenses/MIT).

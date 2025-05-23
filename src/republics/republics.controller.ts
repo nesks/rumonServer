@@ -28,6 +28,7 @@ export class RepublicsController {
       }
     }
   })
+  @ApiResponse({ status: 401, description: 'Token de acesso inválido ou ausente' })
   @Post()
   create(@Body() createRepublicDto: CreateRepublicDto) {
     return this.republicsService.create(createRepublicDto);
@@ -63,6 +64,7 @@ export class RepublicsController {
       }
     }
   })
+  @ApiResponse({ status: 401, description: 'Token de acesso inválido ou ausente' })
   @Get()
   findAll() {
     return this.republicsService.findAll();
@@ -96,6 +98,7 @@ export class RepublicsController {
     }
   })
   @ApiResponse({ status: 404, description: 'República não encontrada' })
+  @ApiResponse({ status: 401, description: 'Token de acesso inválido ou ausente' })
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.republicsService.findOne(id);
@@ -118,6 +121,7 @@ export class RepublicsController {
     }
   })
   @ApiResponse({ status: 404, description: 'República não encontrada' })
+  @ApiResponse({ status: 401, description: 'Token de acesso inválido ou ausente' })
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateRepublicDto: UpdateRepublicDto) {
     return this.republicsService.update(id, updateRepublicDto);
@@ -126,6 +130,7 @@ export class RepublicsController {
   @ApiOperation({ summary: 'Remover uma república' })
   @ApiResponse({ status: 200, description: 'República removida com sucesso' })
   @ApiResponse({ status: 404, description: 'República não encontrada' })
+  @ApiResponse({ status: 401, description: 'Token de acesso inválido ou ausente' })
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.republicsService.remove(id);
