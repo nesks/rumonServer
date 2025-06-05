@@ -2,6 +2,7 @@ import { Injectable, ConflictException, NotFoundException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { UserSocialMedia } from './entities/user-social-media.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
@@ -12,6 +13,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(UserSocialMedia)
+    private userSocialMediaRepository: Repository<UserSocialMedia>,
     private republicsService: RepublicsService,
   ) {}
 
@@ -78,5 +81,40 @@ export class UsersService {
 
   async findById(id: string) {
     return this.usersRepository.findOne({ where: { id } });
+  }
+
+  async getUserProfile(id: string) {
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['republic'],
+    });
+
+    if (!user) {
+      throw new NotFoundException(`Usuário com ID ${id} não encontrado`);
+    }
+
+    // Buscar redes sociais separadamente
+    const socialMedias = await this.userSocialMediaRepository.find({
+      where: { user_id: id },
+    });
+
+    return {
+      id: user.id,
+      name: user.name,
+      apelido: user.apelido,
+      email: user.email,
+      phone: user.phone,
+      periodoIngresso: user.periodoIngresso,
+      origem: user.origem,
+      faculdade: user.faculdade,
+      curso: user.curso,
+      hierarquia: user.hierarquia,
+      descricao: user.descricao,
+      isActive: user.isActive,
+      republicName: user.republic?.name || null,
+      socialMedias: socialMedias || [],
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 } 

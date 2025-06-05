@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Param, UseGuards, Get } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { SetPasswordDto } from './dto/set-password.dto';
@@ -46,5 +46,95 @@ export class UsersController {
     @Body() setPasswordDto: SetPasswordDto,
   ) {
     return this.usersService.setPassword(token, setPasswordDto.password);
+  }
+
+  @ApiOperation({ summary: 'Obter informações completas do usuário' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Informações do usuário obtidas com sucesso',
+    schema: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'string',
+          example: '123e4567-e89b-12d3-a456-426614174000'
+        },
+        name: {
+          type: 'string',
+          example: 'João Silva'
+        },
+        apelido: {
+          type: 'string',
+          example: 'Joãozinho'
+        },
+        email: {
+          type: 'string',
+          example: 'joao@email.com'
+        },
+        phone: {
+          type: 'string',
+          example: '+5511999999999'
+        },
+        periodoIngresso: {
+          type: 'string',
+          example: '24.1'
+        },
+        origem: {
+          type: 'string',
+          example: 'Belo Horizonte, MG'
+        },
+        faculdade: {
+          type: 'string',
+          enum: ['UFOP', 'UEMG'],
+          example: 'UFOP'
+        },
+        curso: {
+          type: 'string',
+          example: 'Engenharia de Computação'
+        },
+        hierarquia: {
+          type: 'string',
+          enum: ['calouro', 'morador', 'decano', 'ex-morador'],
+          example: 'morador'
+        },
+        descricao: {
+          type: 'string',
+          example: 'Estudante de engenharia, ama música e esportes'
+        },
+        isActive: {
+          type: 'boolean',
+          example: true
+        },
+        republicName: {
+          type: 'string',
+          example: 'República dos Estudantes'
+        },
+        socialMedias: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              telefone: { type: 'string', example: '+5511999999999' },
+              whatsapp: { type: 'string', example: '+5511999999999' },
+              instagram: { type: 'string', example: '@joaosilva' },
+              linkedin: { type: 'string', example: 'joao-silva-123' }
+            }
+          }
+        },
+        createdAt: {
+          type: 'string',
+          example: '2024-03-20T10:00:00Z'
+        },
+        updatedAt: {
+          type: 'string',
+          example: '2024-03-20T10:00:00Z'
+        }
+      }
+    }
+  })
+  @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
+  @Get(':id')
+  getUserProfile(@Param('id') id: string) {
+    return this.usersService.getUserProfile(id);
   }
 }
