@@ -104,6 +104,14 @@ export class User {
   @Column({ type: 'text', nullable: true })
   descricao: string;
 
+  @ApiProperty({
+    description: 'Link da foto de perfil do usuário',
+    example: 'https://example.com/profile-pictures/joao.jpg',
+    required: false
+  })
+  @Column({ nullable: true })
+  linkfotoPerfil: string;
+
   @Column({ nullable: true })
   @Exclude()
   password: string;

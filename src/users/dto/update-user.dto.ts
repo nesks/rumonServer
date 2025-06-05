@@ -1,16 +1,18 @@
-import { IsString, IsEmail, IsPhoneNumber, MinLength, IsUUID, IsOptional, IsEnum, IsUrl } from 'class-validator';
+import { IsString, IsEmail, IsPhoneNumber, MinLength, IsOptional, IsEnum, IsUrl } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserHierarchy, Faculdade } from '../entities/user.entity';
 
-export class CreateUserDto {
+export class UpdateUserDto {
   @ApiProperty({
     description: 'Nome do usuário',
     example: 'João Silva',
-    minLength: 3
+    minLength: 3,
+    required: false
   })
   @IsString()
   @MinLength(3)
-  name: string;
+  @IsOptional()
+  name?: string;
 
   @ApiProperty({
     description: 'Apelido do usuário',
@@ -23,17 +25,21 @@ export class CreateUserDto {
 
   @ApiProperty({
     description: 'Email do usuário',
-    example: 'joao@email.com'
+    example: 'joao@email.com',
+    required: false
   })
   @IsEmail()
-  email: string;
+  @IsOptional()
+  email?: string;
 
   @ApiProperty({
     description: 'Telefone do usuário no formato brasileiro',
-    example: '+5511999999999'
+    example: '+5511999999999',
+    required: false
   })
   @IsPhoneNumber('BR')
-  phone: string;
+  @IsOptional()
+  phone?: string;
 
   @ApiProperty({
     description: 'Período de ingresso no formato ano.semestre',
@@ -99,13 +105,4 @@ export class CreateUserDto {
   @IsUrl()
   @IsOptional()
   linkfotoPerfil?: string;
-
-  @ApiProperty({
-    description: 'ID da república que o usuário pertence',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-    required: false
-  })
-  @IsUUID()
-  @IsOptional()
-  republic_id?: string;
 } 
