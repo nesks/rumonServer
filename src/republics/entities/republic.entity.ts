@@ -34,6 +34,14 @@ export class Republic {
   description: string;
 
   @ApiProperty({
+    description: 'Link da foto da bandeira da república',
+    example: 'https://example.com/republic-flags/republica-estudantes.jpg',
+    required: false
+  })
+  @Column({ nullable: true })
+  linkFoto: string;
+
+  @ApiProperty({
     description: 'Lista de usuários da república',
     type: () => [User],
     required: false

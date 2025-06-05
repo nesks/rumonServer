@@ -24,4 +24,11 @@ export class UpdateRepublicDto extends PartialType(CreateRepublicDto) {
     required: false
   })
   description?: string;
+
+  @ApiProperty({
+    description: 'Link da foto da bandeira da república',
+    example: 'https://example.com/republic-flags/republica-estudantes.jpg',
+    required: false
+  })
+  linkFoto?: string;
 } 

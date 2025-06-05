@@ -12,8 +12,8 @@ export enum UserHierarchy {
 }
 
 export enum Faculdade {
-  UFOP = 'UFOP',
-  UEMG = 'UEMG'
+  UFOP = 'ufop',
+  UEMG = 'uemg'
 }
 
 @Entity('users')
@@ -73,7 +73,7 @@ export class User {
   @ApiProperty({
     description: 'Faculdade do usuário',
     enum: Faculdade,
-    example: 'UFOP',
+    example: 'ufop',
     required: false
   })
   @Column({ type: 'enum', enum: Faculdade, nullable: true })

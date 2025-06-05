@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsPhoneNumber, MinLength, IsOptional, IsEnum, IsUrl } from 'class-validator';
+import { IsString, IsEmail, IsPhoneNumber, MinLength, IsOptional, IsEnum, IsUrl, ValidateIf } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserHierarchy, Faculdade } from '../entities/user.entity';
 
@@ -62,7 +62,7 @@ export class UpdateUserDto {
   @ApiProperty({
     description: 'Faculdade do usuário',
     enum: Faculdade,
-    example: 'UFOP',
+    example: 'ufop',
     required: false
   })
   @IsEnum(Faculdade)
@@ -102,7 +102,8 @@ export class UpdateUserDto {
     example: 'https://example.com/profile-pictures/joao.jpg',
     required: false
   })
-  @IsUrl()
+  @ValidateIf((o) => o.linkfotoPerfil !== '' && o.linkfotoPerfil !== null && o.linkfotoPerfil !== undefined)
+  @IsUrl({}, { message: 'Link da foto deve ser uma URL válida' })
   @IsOptional()
   linkfotoPerfil?: string;
 } 

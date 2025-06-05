@@ -23,6 +23,7 @@ export class RepublicsController {
         name: { type: 'string', example: 'República dos Estudantes' },
         address: { type: 'string', example: 'Rua das Flores, 123' },
         description: { type: 'string', example: 'República para estudantes universitários' },
+        linkFoto: { type: 'string', example: 'https://example.com/republic-flags/republica-estudantes.jpg' },
         created_at: { type: 'string', format: 'date-time' },
         updated_at: { type: 'string', format: 'date-time' }
       }
@@ -45,21 +46,8 @@ export class RepublicsController {
         properties: {
           id: { type: 'string', example: '123e4567-e89b-12d3-a456-426614174000' },
           name: { type: 'string', example: 'República dos Estudantes' },
-          address: { type: 'string', example: 'Rua das Flores, 123' },
           description: { type: 'string', example: 'República para estudantes universitários' },
-          created_at: { type: 'string', format: 'date-time' },
-          updated_at: { type: 'string', format: 'date-time' },
-          users: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: { type: 'string' },
-                name: { type: 'string' },
-                email: { type: 'string' }
-              }
-            }
-          }
+          linkFoto: { type: 'string', example: 'https://example.com/republic-flags/republica-estudantes.jpg' }
         }
       }
     }
@@ -115,6 +103,7 @@ export class RepublicsController {
         name: { type: 'string', example: 'República dos Estudantes' },
         address: { type: 'string', example: 'Rua das Flores, 123' },
         description: { type: 'string', example: 'República para estudantes universitários' },
+        linkFoto: { type: 'string', example: 'https://example.com/republic-flags/republica-estudantes.jpg' },
         created_at: { type: 'string', format: 'date-time' },
         updated_at: { type: 'string', format: 'date-time' }
       }
@@ -134,5 +123,28 @@ export class RepublicsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.republicsService.remove(id);
+  }
+
+  @ApiOperation({ summary: 'Listar todos os usuários de uma república' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de usuários da república retornada com sucesso',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: '123e4567-e89b-12d3-a456-426614174000' },
+          name: { type: 'string', example: 'João Silva' },
+          linkfotoPerfil: { type: 'string', example: 'https://example.com/profile-pictures/joao.jpg' }
+        }
+      }
+    }
+  })
+  @ApiResponse({ status: 404, description: 'República não encontrada' })
+  @ApiResponse({ status: 401, description: 'Token de acesso inválido ou ausente' })
+  @Get(':id/users')
+  getRepublicUsers(@Param('id') id: string) {
+    return this.republicsService.getRepublicUsers(id);
   }
 } 

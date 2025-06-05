@@ -19,7 +19,7 @@ export class RepublicsService {
 
   findAll() {
     return this.republicsRepository.find({
-      relations: ['users'],
+      select: ['id', 'name', 'description', 'linkFoto'],
     });
   }
 
@@ -45,5 +45,22 @@ export class RepublicsService {
   async remove(id: string) {
     const republic = await this.findOne(id);
     return this.republicsRepository.remove(republic);
+  }
+
+  async getRepublicUsers(id: string) {
+    const republic = await this.republicsRepository.findOne({
+      where: { id },
+      relations: ['users'],
+    });
+
+    if (!republic) {
+      throw new NotFoundException(`República com ID ${id} não encontrada`);
+    }
+
+    return republic.users.map(user => ({
+      id: user.id,
+      name: user.name,
+      linkfotoPerfil: user.linkfotoPerfil || null,
+    }));
   }
 } 

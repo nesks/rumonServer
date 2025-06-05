@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsUrl } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateRepublicDto {
@@ -27,4 +27,13 @@ export class CreateRepublicDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @ApiProperty({
+    description: 'Link da foto da bandeira da república',
+    example: 'https://example.com/republic-flags/republica-estudantes.jpg',
+    required: false
+  })
+  @IsUrl()
+  @IsOptional()
+  linkFoto?: string;
 } 
