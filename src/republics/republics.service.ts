@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Republic } from './entities/republic.entity';
+import { Casa } from './entities/casa.entity';
 import { CreateRepublicDto } from './dto/create-republic.dto';
 import { UpdateRepublicDto } from './dto/update-republic.dto';
 
@@ -10,6 +11,8 @@ export class RepublicsService {
   constructor(
     @InjectRepository(Republic)
     private republicsRepository: Repository<Republic>,
+    @InjectRepository(Casa)
+    private casasRepository: Repository<Casa>,
   ) {}
 
   create(createRepublicDto: CreateRepublicDto) {
@@ -26,7 +29,7 @@ export class RepublicsService {
   async findOne(id: string) {
     const republic = await this.republicsRepository.findOne({
       where: { id },
-      relations: ['users'],
+      relations: ['users', 'casa', 'usuarioRumon'],
     });
 
     if (!republic) {

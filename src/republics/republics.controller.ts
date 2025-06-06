@@ -69,6 +69,34 @@ export class RepublicsController {
         name: { type: 'string', example: 'República dos Estudantes' },
         address: { type: 'string', example: 'Rua das Flores, 123' },
         description: { type: 'string', example: 'República para estudantes universitários' },
+        linkFoto: { type: 'string', example: 'https://example.com/republic-flags/republica-estudantes.jpg' },
+        tipo: { type: 'string', enum: ['masculina', 'feminina', 'mista'], example: 'mista' },
+        fundada_em: { type: 'string', format: 'date', example: '1995-03-15' },
+        status: { type: 'string', enum: ['ativa', 'inativa', 'reformando', 'suspended'], example: 'ativa' },
+        foto_capa: { type: 'string', example: 'https://example.com/covers/republica-estudantes.jpg' },
+        instagram: { type: 'string', example: 'https://instagram.com/republicaestudantes' },
+        hino: { type: 'string', example: 'Letra do hino da república...' },
+        linkEstatutoPdf: { type: 'string', example: 'https://example.com/estatutos/republica-estudantes.pdf' },
+        usuarioRumon: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: 'string' },
+            email: { type: 'string' }
+          }
+        },
+        casa: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            cidade: { type: 'string', example: 'Ouro Preto' },
+            estado: { type: 'string', example: 'MG' },
+            endereco: { type: 'string', example: 'Rua das Flores, 123, Centro' },
+            valorAluguel: { type: 'number', example: 1500.00 },
+            valorTotal: { type: 'number', example: 2500.00 },
+            quantidadeVagas: { type: 'number', example: 8 }
+          }
+        },
         created_at: { type: 'string', format: 'date-time' },
         updated_at: { type: 'string', format: 'date-time' },
         users: {
