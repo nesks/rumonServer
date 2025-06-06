@@ -1,5 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { Republic } from './republic.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('casas')
@@ -55,14 +54,6 @@ export class Casa {
   })
   @Column({ type: 'int' })
   quantidadeVagas: number;
-
-  @ApiProperty({
-    description: 'República associada à casa',
-    type: () => Republic,
-    required: false
-  })
-  @OneToOne(() => Republic, republic => republic.casa)
-  republic: Republic;
 
   @ApiProperty({
     description: 'Data de criação da casa',

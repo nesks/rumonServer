@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { RepublicsModule } from './republics/republics.module';
 import { User } from './users/entities/user.entity';
 import { Republic } from './republics/entities/republic.entity';
+import { Casa } from './republics/entities/casa.entity';
 import { UserSocialMedia } from './users/entities/user-social-media.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -25,7 +26,7 @@ import { AppService } from './app.service';
           return {
             type: 'postgres',
             url: databaseUrl,
-            entities: [User, Republic, UserSocialMedia],
+            entities: [User, Republic, Casa, UserSocialMedia],
             migrations: ['dist/migrations/*.js'],
             migrationsRun: false,
             synchronize: configService.get('NODE_ENV') !== 'production',
@@ -41,7 +42,7 @@ import { AppService } from './app.service';
           username: configService.get('DB_USERNAME', 'postgres'),
           password: configService.get('DB_PASSWORD', 'postgres'),
           database: configService.get('DB_DATABASE', 'rumon'),
-          entities: [User, Republic, UserSocialMedia],
+          entities: [User, Republic, Casa, UserSocialMedia],
           migrations: ['dist/migrations/*.js'],
           migrationsRun: false,
           synchronize: configService.get('NODE_ENV') !== 'production',

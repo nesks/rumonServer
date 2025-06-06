@@ -130,7 +130,7 @@ export class Republic {
     type: () => Casa,
     required: false
   })
-  @OneToOne(() => Casa, casa => casa.republic, { cascade: true })
+  @OneToOne(() => Casa, { nullable: true })
   @JoinColumn({ name: 'casa_id' })
   casa: Casa;
 
