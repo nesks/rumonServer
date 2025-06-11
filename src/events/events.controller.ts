@@ -9,6 +9,7 @@ import {
   UseGuards,
   Request,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { EventsService } from './events.service';
@@ -21,6 +22,8 @@ import { UpdateInviteStatusDto } from './dto/update-invite-status.dto';
 import { InviteBatchDto } from './dto/invite-batch.dto';
 import { InviteRepublicsDto } from './dto/invite-republics.dto';
 import { InviteUsersDto } from './dto/invite-users.dto';
+import { EventsByMonthDto } from './dto/events-by-month.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('events')
 @Controller('events')
@@ -110,6 +113,63 @@ export class EventsController {
   @ApiResponse({ status: 200, description: 'Lista de convites do usuário' })
   findEventInvitesByUser(@Param('userId') userId: string) {
     return this.eventsService.findEventInvitesByUser(userId);
+  }
+
+  @Get('visible/month/:year/:month')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Listar eventos visíveis a um usuário em um mês específico' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de eventos visíveis ao usuário no mês especificado',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          name: { type: 'string' },
+          description: { type: 'string' },
+          eventDate: { type: 'string', format: 'date' },
+          eventTime: { type: 'string' },
+          location: { type: 'string' },
+          mediaUrl: { type: 'string' },
+          visibility: { type: 'string', enum: ['aberto', 'fechado'] },
+          status: { type: 'string', enum: ['pendente', 'aprovado', 'rejeitado'] }
+        }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Parâmetros inválidos (ano ou mês fora do intervalo permitido)' 
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Token de autenticação necessário' 
+  })
+  findVisibleEventsByMonth(
+    @Param('year') year: string,
+    @Param('month') month: string,
+    @Query('userId') userId?: string,
+    @Request() req?
+  ) {
+    const yearNum = parseInt(year);
+    const monthNum = parseInt(month);
+    
+    // Validação básica dos parâmetros
+    if (isNaN(yearNum) || isNaN(monthNum) || yearNum < 2020 || yearNum > 2030 || monthNum < 1 || monthNum > 12) {
+      throw new BadRequestException('Ano deve estar entre 2020-2030 e mês entre 1-12');
+    }
+    
+    // Usar userId do query param ou do usuário autenticado (prioriza o usuário autenticado por segurança)
+    const targetUserId = userId || req?.user?.id;
+    
+    if (!targetUserId) {
+      throw new BadRequestException('User ID é obrigatório');
+    }
+    
+    return this.eventsService.findVisibleEventsByMonth(targetUserId, yearNum, monthNum);
   }
 
   @Get(':id')

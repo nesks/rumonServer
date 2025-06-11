@@ -182,6 +182,55 @@ export class EventsService {
     });
   }
 
+  async findVisibleEventsByMonth(userId: string, year: number, month: number): Promise<Event[]> {
+    // Criar datas de início e fim do mês
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
+
+    // Query builder para buscar eventos visíveis ao usuário
+    const queryBuilder = this.eventRepository
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.createdBy', 'createdBy')
+      .leftJoinAndSelect('event.eventType', 'eventType')
+      .leftJoinAndSelect('event.eventRepublics', 'eventRepublics')
+      .leftJoinAndSelect('eventRepublics.republic', 'republic')
+      .leftJoinAndSelect('event.eventInvites', 'eventInvites')
+      .leftJoinAndSelect('eventInvites.user', 'inviteUser')
+      .where('event.eventDate >= :startDate', { startDate: startDate.toISOString().split('T')[0] })
+      .andWhere('event.eventDate <= :endDate', { endDate: endDate.toISOString().split('T')[0] })
+      .andWhere('event.status = :approvedStatus', { approvedStatus: EventStatus.APROVADO });
+
+    // Condições de visibilidade:
+    // 1. Eventos públicos (abertos)
+    // 2. Eventos criados pelo próprio usuário
+    // 3. Eventos para os quais o usuário foi convidado
+    // 4. Eventos de repúblicas das quais o usuário faz parte
+    queryBuilder.andWhere(
+      `(
+        event.visibility = :publicVisibility OR
+        event.created_by_id = :userId OR
+        EXISTS (
+          SELECT 1 FROM event_invites ei 
+          WHERE ei.event_id = event.id AND ei.user_id = :userId
+        ) OR
+        EXISTS (
+          SELECT 1 FROM event_republics er
+          INNER JOIN users u ON er.republic_id = u.republic_id
+          WHERE er.event_id = event.id AND u.id = :userId
+        )
+      )`,
+      {
+        publicVisibility: EventVisibility.ABERTO,
+        userId: userId
+      }
+    );
+
+    return await queryBuilder
+      .orderBy('event.eventDate', 'ASC')
+      .addOrderBy('event.eventTime', 'ASC')
+      .getMany();
+  }
+
   async updateEvent(id: string, updateEventDto: UpdateEventDto): Promise<Event> {
     const event = await this.findEventById(id);
     Object.assign(event, updateEventDto);
