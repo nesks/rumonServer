@@ -128,10 +128,17 @@ export class RepublicsController {
       type: 'object',
       properties: {
         id: { type: 'string', example: '123e4567-e89b-12d3-a456-426614174000' },
-        name: { type: 'string', example: 'República dos Estudantes' },
+        name: { type: 'string', example: 'Alcatraz' },
         address: { type: 'string', example: 'Rua das Flores, 123' },
         description: { type: 'string', example: 'República para estudantes universitários' },
-        linkFoto: { type: 'string', example: 'https://example.com/republic-flags/republica-estudantes.jpg' },
+        tipo: { type: 'string', enum: ['masculina', 'feminina', 'mista'], example: 'mista' },
+        fundada_em: { type: 'string', format: 'date', example: '1995-03-15' },
+        status: { type: 'string', enum: ['ativa', 'inativa', 'reformando', 'suspended'], example: 'ativa' },
+        linkFoto: { type: 'string', example: 'https://mhbddklqdbkyqqsluhxz.supabase.co/storage/v1/object/public/rumon-files/republics/ac6ca29b-5906-4b9d-857a-14b84ec599a5/profile-ac6ca29b-5906-4b9d-857a-14b84ec599a5-1749673027661.jpg' },
+        foto_capa: { type: 'string', example: 'https://example.com/covers/republica-estudantes.jpg' },
+        instagram: { type: 'string', example: 'https://instagram.com/republicaestudantes' },
+        hino: { type: 'string', example: 'Letra do hino da república...' },
+        linkEstatutoPdf: { type: 'string', example: 'https://example.com/estatutos/republica-estudantes.pdf' },
         created_at: { type: 'string', format: 'date-time' },
         updated_at: { type: 'string', format: 'date-time' }
       }
