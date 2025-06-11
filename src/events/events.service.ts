@@ -5,12 +5,14 @@ import { Event, EventStatus, EventVisibility } from './entities/event.entity';
 import { EventType } from './entities/event-type.entity';
 import { EventRepublic } from './entities/event-republic.entity';
 import { EventInvite, InviteStatus } from './entities/event-invite.entity';
+import { User } from '../users/entities/user.entity';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { CreateEventTypeDto } from './dto/create-event-type.dto';
 import { UpdateEventTypeDto } from './dto/update-event-type.dto';
 import { UpdateEventStatusDto } from './dto/update-event-status.dto';
 import { UpdateInviteStatusDto } from './dto/update-invite-status.dto';
+import { InviteBatchDto } from './dto/invite-batch.dto';
 
 @Injectable()
 export class EventsService {
@@ -23,6 +25,8 @@ export class EventsService {
     private eventRepublicRepository: Repository<EventRepublic>,
     @InjectRepository(EventInvite)
     private eventInviteRepository: Repository<EventInvite>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
 
   // EventType methods
@@ -249,5 +253,114 @@ export class EventsService {
     });
 
     return await this.eventInviteRepository.save(invite);
+  }
+
+  // Método para convites em lote
+  async addBatchInvitesToEvent(eventId: string, inviteBatchDto: InviteBatchDto): Promise<{
+    success: EventInvite[],
+    failed: { userId: string, reason: string }[]
+  }> {
+    const event = await this.findEventById(eventId);
+    
+    let allUserIds: string[] = [];
+
+    // Coletar IDs de usuários diretos
+    if (inviteBatchDto.user_ids && inviteBatchDto.user_ids.length > 0) {
+      allUserIds = [...allUserIds, ...inviteBatchDto.user_ids];
+    }
+
+    // Coletar usuários das repúblicas
+    if (inviteBatchDto.republic_ids && inviteBatchDto.republic_ids.length > 0) {
+      for (const republicId of inviteBatchDto.republic_ids) {
+        const users = await this.userRepository.find({
+          where: { republic_id: republicId },
+          select: ['id'],
+        });
+        
+        const republicUserIds = users.map(user => user.id);
+        allUserIds = [...allUserIds, ...republicUserIds];
+      }
+    }
+
+    // Remover duplicatas
+    const uniqueUserIds = [...new Set(allUserIds)];
+
+    const successfulInvites: EventInvite[] = [];
+    const failedInvites: { userId: string, reason: string }[] = [];
+
+    // Processar cada convite
+    for (const userId of uniqueUserIds) {
+      try {
+        // Verificar se já existe convite
+        const existingInvite = await this.eventInviteRepository.findOne({
+          where: { event_id: eventId, user_id: userId },
+        });
+
+        if (existingInvite) {
+          failedInvites.push({
+            userId,
+            reason: 'Usuário já foi convidado para este evento'
+          });
+          continue;
+        }
+
+        // Verificar se o usuário existe
+        const user = await this.userRepository.findOne({
+          where: { id: userId },
+        });
+
+        if (!user) {
+          failedInvites.push({
+            userId,
+            reason: 'Usuário não encontrado'
+          });
+          continue;
+        }
+
+        // Criar o convite
+        const invite = this.eventInviteRepository.create({
+          event_id: eventId,
+          user_id: userId,
+        });
+
+        const savedInvite = await this.eventInviteRepository.save(invite);
+        successfulInvites.push(savedInvite);
+
+      } catch (error) {
+        failedInvites.push({
+          userId,
+          reason: error.message || 'Erro desconhecido'
+        });
+      }
+    }
+
+    return {
+      success: successfulInvites,
+      failed: failedInvites
+    };
+  }
+
+  // Método específico para convidar uma república inteira
+  async inviteRepublicToEvent(eventId: string, republicId: string): Promise<{
+    success: EventInvite[],
+    failed: { userId: string, reason: string }[]
+  }> {
+    return this.addBatchInvitesToEvent(eventId, { republic_ids: [republicId] });
+  }
+
+  // Método específico para convidar múltiplas repúblicas
+  async inviteMultipleRepublicsToEvent(eventId: string, republicIds: string[]): Promise<{
+    success: EventInvite[],
+    failed: { userId: string, reason: string }[]
+  }> {
+    return this.addBatchInvitesToEvent(eventId, { republic_ids: republicIds });
+  }
+
+  // Método específico para convidar múltiplos usuários
+  async inviteMultipleUsersToEvent(eventId: string, userIds: string[]): Promise<{
+    success: EventInvite[],
+    failed: { userId: string, reason: string }[]
+  }> {
+    return this.addBatchInvitesToEvent(eventId, { user_ids: userIds });
   }
 } 

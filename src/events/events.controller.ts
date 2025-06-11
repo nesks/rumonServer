@@ -18,6 +18,9 @@ import { CreateEventTypeDto } from './dto/create-event-type.dto';
 import { UpdateEventTypeDto } from './dto/update-event-type.dto';
 import { UpdateEventStatusDto } from './dto/update-event-status.dto';
 import { UpdateInviteStatusDto } from './dto/update-invite-status.dto';
+import { InviteBatchDto } from './dto/invite-batch.dto';
+import { InviteRepublicsDto } from './dto/invite-republics.dto';
+import { InviteUsersDto } from './dto/invite-users.dto';
 
 @ApiTags('events')
 @Controller('events')
@@ -162,5 +165,85 @@ export class EventsController {
     @Body() updateInviteStatusDto: UpdateInviteStatusDto,
   ) {
     return this.eventsService.updateInviteStatus(eventId, userId, updateInviteStatusDto);
+  }
+
+  // Rotas para convites em lote
+  @Post(':eventId/invite/batch')
+  @ApiOperation({ summary: 'Convidar múltiplos usuários ou repúblicas inteiras para evento' })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Convites processados com sucesso',
+    schema: {
+      type: 'object',
+      properties: {
+        success: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              event_id: { type: 'string' },
+              user_id: { type: 'string' },
+              status: { type: 'string', enum: ['pendente', 'interessado', 'confirmado', 'recusado'] },
+              createdAt: { type: 'string', format: 'date-time' },
+              updatedAt: { type: 'string', format: 'date-time' }
+            }
+          }
+        },
+        failed: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              userId: { type: 'string' },
+              reason: { type: 'string' }
+            }
+          }
+        }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Dados inválidos' })
+  @ApiResponse({ status: 404, description: 'Evento não encontrado' })
+  addBatchInvitesToEvent(
+    @Param('eventId') eventId: string,
+    @Body() inviteBatchDto: InviteBatchDto,
+  ) {
+    return this.eventsService.addBatchInvitesToEvent(eventId, inviteBatchDto);
+  }
+
+  @Post(':eventId/invite/republic/:republicId')
+  @ApiOperation({ summary: 'Convidar todos os integrantes de uma república para evento' })
+  @ApiResponse({ status: 201, description: 'Convites para a república criados com sucesso' })
+  @ApiResponse({ status: 404, description: 'Evento não encontrado' })
+  inviteRepublicToEvent(
+    @Param('eventId') eventId: string,
+    @Param('republicId') republicId: string,
+  ) {
+    return this.eventsService.inviteRepublicToEvent(eventId, republicId);
+  }
+
+  @Post(':eventId/invite/republics')
+  @ApiOperation({ summary: 'Convidar todos os integrantes de múltiplas repúblicas para evento' })
+  @ApiResponse({ status: 201, description: 'Convites para as repúblicas criados com sucesso' })
+  @ApiResponse({ status: 400, description: 'Lista de repúblicas inválida' })
+  @ApiResponse({ status: 404, description: 'Evento não encontrado' })
+  inviteMultipleRepublicsToEvent(
+    @Param('eventId') eventId: string,
+    @Body() inviteRepublicsDto: InviteRepublicsDto,
+  ) {
+    return this.eventsService.inviteMultipleRepublicsToEvent(eventId, inviteRepublicsDto.republic_ids);
+  }
+
+  @Post(':eventId/invite/users')
+  @ApiOperation({ summary: 'Convidar múltiplos usuários para evento' })
+  @ApiResponse({ status: 201, description: 'Convites para os usuários criados com sucesso' })
+  @ApiResponse({ status: 400, description: 'Lista de usuários inválida' })
+  @ApiResponse({ status: 404, description: 'Evento não encontrado' })
+  inviteMultipleUsersToEvent(
+    @Param('eventId') eventId: string,
+    @Body() inviteUsersDto: InviteUsersDto,
+  ) {
+    return this.eventsService.inviteMultipleUsersToEvent(eventId, inviteUsersDto.user_ids);
   }
 } 

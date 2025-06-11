@@ -6,9 +6,10 @@ import { Event } from './entities/event.entity';
 import { EventType } from './entities/event-type.entity';
 import { EventRepublic } from './entities/event-republic.entity';
 import { EventInvite } from './entities/event-invite.entity';
+import { User } from '../users/entities/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Event, EventType, EventRepublic, EventInvite])],
+  imports: [TypeOrmModule.forFeature([Event, EventType, EventRepublic, EventInvite, User])],
   controllers: [EventsController],
   providers: [EventsService],
   exports: [EventsService],
