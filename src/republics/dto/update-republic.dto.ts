@@ -1,11 +1,9 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateRepublicDto } from './create-republic.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsOptional, IsEnum, IsString, IsDateString, IsUrl, IsUUID } from 'class-validator';
+import { IsOptional, IsEnum, IsString, IsDateString, IsUrl, IsUUID, ValidateIf } from 'class-validator';
 import { RepublicTipo, RepublicStatus } from '../entities/republic.entity';
 
-export class UpdateRepublicDto extends PartialType(CreateRepublicDto) {
+export class UpdateRepublicDto {
   @ApiProperty({
     description: 'Nome da república',
     example: 'República dos Estudantes',
@@ -41,6 +39,7 @@ export class UpdateRepublicDto extends PartialType(CreateRepublicDto) {
   })
   @IsOptional()
   @Transform(({ value }) => value === '' ? null : value)
+  @ValidateIf((o) => o.linkFoto !== null && o.linkFoto !== undefined)
   @IsUrl({}, { message: 'linkFoto deve ser uma URL válida' })
   linkFoto?: string;
 
@@ -62,6 +61,7 @@ export class UpdateRepublicDto extends PartialType(CreateRepublicDto) {
   })
   @IsOptional()
   @Transform(({ value }) => value === '' ? null : value)
+  @ValidateIf((o) => o.fundada_em !== null && o.fundada_em !== undefined)
   @IsDateString({}, { message: 'fundada_em deve ser uma data válida no formato YYYY-MM-DD' })
   fundada_em?: Date;
 
@@ -83,6 +83,7 @@ export class UpdateRepublicDto extends PartialType(CreateRepublicDto) {
   })
   @IsOptional()
   @Transform(({ value }) => value === '' ? null : value)
+  @ValidateIf((o) => o.foto_capa !== null && o.foto_capa !== undefined)
   @IsUrl({}, { message: 'foto_capa deve ser uma URL válida' })
   foto_capa?: string;
 
@@ -93,6 +94,7 @@ export class UpdateRepublicDto extends PartialType(CreateRepublicDto) {
   })
   @IsOptional()
   @Transform(({ value }) => value === '' ? null : value)
+  @ValidateIf((o) => o.instagram !== null && o.instagram !== undefined)
   @IsUrl({}, { message: 'instagram deve ser uma URL válida' })
   instagram?: string;
 
@@ -113,6 +115,7 @@ export class UpdateRepublicDto extends PartialType(CreateRepublicDto) {
   })
   @IsOptional()
   @Transform(({ value }) => value === '' ? null : value)
+  @ValidateIf((o) => o.linkEstatutoPdf !== null && o.linkEstatutoPdf !== undefined)
   @IsUrl({}, { message: 'linkEstatutoPdf deve ser uma URL válida' })
   linkEstatutoPdf?: string;
 
