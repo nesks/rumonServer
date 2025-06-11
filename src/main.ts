@@ -1,9 +1,26 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ValidationPipe, Logger } from '@nestjs/common';
+import { ErrorLoggingInterceptor } from './common/interceptors/error-logging.interceptor';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
+  
   const app = await NestFactory.create(AppModule);
+
+  // Configuração global do ValidationPipe para aplicar transformações
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true, // Aplica @Transform automaticamente
+    whitelist: true, // Remove campos não definidos no DTO
+    forbidNonWhitelisted: true, // Gera erro para campos extras
+    transformOptions: {
+      enableImplicitConversion: true, // Conversão automática de tipos
+    },
+  }));
+
+  // Interceptor global para logging de erros 500
+  app.useGlobalInterceptors(new ErrorLoggingInterceptor());
 
   // Configuração do CORS
   app.enableCors({
@@ -49,6 +66,10 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+  
+  logger.log(`🚀 Servidor rodando na porta ${port}`);
+  logger.log(`📚 Documentação disponível em http://localhost:${port}/api`);
 }
 bootstrap();

@@ -41,7 +41,81 @@ export class RepublicsService {
 
   async update(id: string, updateRepublicDto: UpdateRepublicDto) {
     const republic = await this.findOne(id);
-    this.republicsRepository.merge(republic, updateRepublicDto);
+    
+    // Filtra e transforma apenas os campos que devem ser atualizados
+    const fieldsToUpdate: any = {};
+    
+    // Campos de texto simples
+    if (updateRepublicDto.name && updateRepublicDto.name.trim() !== '') {
+      fieldsToUpdate.name = updateRepublicDto.name.trim();
+    }
+    
+    if (updateRepublicDto.address && updateRepublicDto.address.trim() !== '') {
+      fieldsToUpdate.address = updateRepublicDto.address.trim();
+    }
+    
+    if (updateRepublicDto.description && updateRepublicDto.description.trim() !== '') {
+      fieldsToUpdate.description = updateRepublicDto.description.trim();
+    }
+    
+    if (updateRepublicDto.linkFoto && updateRepublicDto.linkFoto.trim() !== '') {
+      fieldsToUpdate.linkFoto = updateRepublicDto.linkFoto.trim();
+    }
+    
+    if (updateRepublicDto.foto_capa && updateRepublicDto.foto_capa.trim() !== '') {
+      fieldsToUpdate.foto_capa = updateRepublicDto.foto_capa.trim();
+    }
+    
+    if (updateRepublicDto.instagram && updateRepublicDto.instagram.trim() !== '') {
+      fieldsToUpdate.instagram = updateRepublicDto.instagram.trim();
+    }
+    
+    if (updateRepublicDto.hino && updateRepublicDto.hino.trim() !== '') {
+      fieldsToUpdate.hino = updateRepublicDto.hino.trim();
+    }
+    
+    if (updateRepublicDto.linkEstatutoPdf && updateRepublicDto.linkEstatutoPdf.trim() !== '') {
+      fieldsToUpdate.linkEstatutoPdf = updateRepublicDto.linkEstatutoPdf.trim();
+    }
+    
+    // Campo tipo - transforma para lowercase se não estiver vazio
+    if (updateRepublicDto.tipo && updateRepublicDto.tipo.trim() !== '') {
+      const tipoLower = updateRepublicDto.tipo.toLowerCase().trim();
+      if (['masculina', 'feminina', 'mista'].includes(tipoLower)) {
+        fieldsToUpdate.tipo = tipoLower;
+      }
+    }
+    
+    // Campo status - transforma para lowercase se não estiver vazio
+    if (updateRepublicDto.status && updateRepublicDto.status.trim() !== '') {
+      const statusLower = updateRepublicDto.status.toLowerCase().trim();
+      if (['ativa', 'inativa', 'reformando', 'suspended'].includes(statusLower)) {
+        fieldsToUpdate.status = statusLower;
+      }
+    }
+    
+    // Campo data - só atualiza se for uma data válida
+    if (updateRepublicDto.fundada_em && updateRepublicDto.fundada_em.trim() !== '') {
+      const date = new Date(updateRepublicDto.fundada_em.trim());
+      if (!isNaN(date.getTime())) {
+        fieldsToUpdate.fundada_em = date;
+      }
+    }
+    
+    // IDs - só atualiza se não estiver vazio
+    if (updateRepublicDto.usuario_rumon_id && updateRepublicDto.usuario_rumon_id.trim() !== '') {
+      fieldsToUpdate.usuario_rumon_id = updateRepublicDto.usuario_rumon_id.trim();
+    }
+    
+    if (updateRepublicDto.casa_id && updateRepublicDto.casa_id.trim() !== '') {
+      fieldsToUpdate.casa_id = updateRepublicDto.casa_id.trim();
+    }
+    
+    // Só faz merge se houver campos para atualizar
+    if (Object.keys(fieldsToUpdate).length > 0) {
+      this.republicsRepository.merge(republic, fieldsToUpdate);
+    }
+    
     return this.republicsRepository.save(republic);
   }
 
