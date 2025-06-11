@@ -67,19 +67,8 @@ export class EventsService {
     // Verificar se o tipo de evento existe
     const eventType = await this.findEventTypeById(createEventDto.event_type_id);
 
-    // Validação: regra dos 6 meses para eventos tipo rock
-    if (eventType.monthsInAdvance) {
-      const eventDate = new Date(createEventDto.eventDate);
-      const now = new Date();
-      const monthsDiff = (eventDate.getFullYear() - now.getFullYear()) * 12 + 
-                        (eventDate.getMonth() - now.getMonth());
-      
-      if (monthsDiff < eventType.monthsInAdvance) {
-        throw new BadRequestException(
-          `Eventos do tipo ${eventType.name} devem ser agendados com pelo menos ${eventType.monthsInAdvance} meses de antecedência`
-        );
-      }
-    }
+    // Validação de antecedência removida temporariamente
+    // TODO: Reativar validação de monthsInAdvance se necessário no futuro
 
     // Validação: apenas um evento tipo rock por dia
     if (eventType.onePerDay) {
