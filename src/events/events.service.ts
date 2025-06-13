@@ -13,6 +13,8 @@ import { UpdateEventTypeDto } from './dto/update-event-type.dto';
 import { UpdateEventStatusDto } from './dto/update-event-status.dto';
 import { UpdateInviteStatusDto } from './dto/update-invite-status.dto';
 import { InviteBatchDto } from './dto/invite-batch.dto';
+import { EventResponseDto } from './dto/event-response.dto';
+import { Between } from 'typeorm';
 
 @Injectable()
 export class EventsService {
@@ -68,7 +70,7 @@ export class EventsService {
   }
 
   // Event methods
-  async createEvent(createEventDto: CreateEventDto, userId: string): Promise<Event> {
+  async createEvent(createEventDto: CreateEventDto, userId: string): Promise<EventResponseDto> {
     const { republic_ids, invited_user_ids, ...eventData } = createEventDto;
 
     // Verificar se o tipo de evento existe
@@ -126,128 +128,132 @@ export class EventsService {
     return await this.findEventById(savedEvent.id);
   }
 
-  async findAllEvents(): Promise<Event[]> {
-    return await this.eventRepository.find({
-      relations: ['createdBy', 'eventType', 'eventRepublics', 'eventRepublics.republic', 'eventInvites', 'eventInvites.user'],
-      order: { eventDate: 'ASC' },
-    });
+  private transformEventToResponseDto(event: Event): EventResponseDto {
+    return {
+      ...event,
+      createdBy: {
+        id: event.createdBy.id,
+        apelido: event.createdBy.apelido,
+        linkfotoPerfil: event.createdBy.linkfotoPerfil
+      },
+      eventType: {
+        id: event.eventType.id,
+        name: event.eventType.name,
+        color: event.eventType.color
+      },
+      eventRepublics: event.eventRepublics.map(er => ({
+        id: er.id,
+        republic: {
+          id: er.republic.id,
+          name: er.republic.name,
+          linkFoto: er.republic.linkFoto
+        }
+      }))
+    };
   }
 
-  async findEventById(id: string): Promise<Event> {
+  async findAllEvents(): Promise<EventResponseDto[]> {
+    const events = await this.eventRepository.find({
+      relations: ['createdBy', 'eventType', 'eventRepublics', 'eventRepublics.republic'],
+      order: { eventDate: 'ASC' },
+    });
+    return events.map(event => this.transformEventToResponseDto(event));
+  }
+
+  async findEventById(id: string): Promise<EventResponseDto> {
     const event = await this.eventRepository.findOne({
       where: { id },
-      relations: ['createdBy', 'eventType', 'eventRepublics', 'eventRepublics.republic', 'eventInvites', 'eventInvites.user'],
+      relations: ['createdBy', 'eventType', 'eventRepublics', 'eventRepublics.republic'],
     });
-    
+
     if (!event) {
       throw new NotFoundException(`Evento com ID ${id} não encontrado`);
     }
-    
-    return event;
+
+    return this.transformEventToResponseDto(event);
   }
 
-  async findEventsByRepublic(republicId: string): Promise<Event[]> {
-    return await this.eventRepository
-      .createQueryBuilder('event')
-      .innerJoin('event.eventRepublics', 'eventRepublic')
-      .where('eventRepublic.republic_id = :republicId', { republicId })
-      .leftJoinAndSelect('event.createdBy', 'createdBy')
-      .leftJoinAndSelect('event.eventType', 'eventType')
-      .leftJoinAndSelect('event.eventRepublics', 'eventRepublics')
-      .leftJoinAndSelect('eventRepublics.republic', 'republic')
-      .orderBy('event.eventDate', 'ASC')
-      .getMany();
+  async findEventsByRepublic(republicId: string): Promise<EventResponseDto[]> {
+    const events = await this.eventRepository.find({
+      where: { eventRepublics: { republic_id: republicId } },
+      relations: ['createdBy', 'eventType', 'eventRepublics', 'eventRepublics.republic'],
+      order: { eventDate: 'ASC' },
+    });
+    return events.map(event => this.transformEventToResponseDto(event));
   }
 
-  async findEventsByUser(userId: string): Promise<Event[]> {
-    return await this.eventRepository.find({
+  async findEventsByUser(userId: string): Promise<EventResponseDto[]> {
+    const events = await this.eventRepository.find({
       where: { created_by_id: userId },
       relations: ['createdBy', 'eventType', 'eventRepublics', 'eventRepublics.republic'],
       order: { eventDate: 'ASC' },
     });
+    return events.map(event => this.transformEventToResponseDto(event));
   }
 
-  async findPublicEvents(): Promise<Event[]> {
-    return await this.eventRepository.find({
-      where: { 
-        visibility: EventVisibility.ABERTO,
-        status: EventStatus.APROVADO 
-      },
+  async findPublicEvents(): Promise<EventResponseDto[]> {
+    const events = await this.eventRepository.find({
+      where: { visibility: EventVisibility.ABERTO, status: EventStatus.APROVADO },
       relations: ['createdBy', 'eventType', 'eventRepublics', 'eventRepublics.republic'],
       order: { eventDate: 'ASC' },
     });
+    return events.map(event => this.transformEventToResponseDto(event));
   }
 
-  async findVisibleEventsByMonth(userId: string, year: number, month: number): Promise<Event[]> {
-    // Criar datas de início e fim do mês
+  async findVisibleEventsByMonth(year: number, month: number): Promise<EventResponseDto[]> {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
 
-    // Query builder para buscar eventos visíveis ao usuário
-    const queryBuilder = this.eventRepository
-      .createQueryBuilder('event')
-      .leftJoinAndSelect('event.createdBy', 'createdBy')
-      .leftJoinAndSelect('event.eventType', 'eventType')
-      .leftJoinAndSelect('event.eventRepublics', 'eventRepublics')
-      .leftJoinAndSelect('eventRepublics.republic', 'republic')
-      .leftJoinAndSelect('event.eventInvites', 'eventInvites')
-      .leftJoinAndSelect('eventInvites.user', 'inviteUser')
-      .where('event.eventDate >= :startDate', { startDate: startDate.toISOString().split('T')[0] })
-      .andWhere('event.eventDate <= :endDate', { endDate: endDate.toISOString().split('T')[0] })
-      .andWhere('event.status = :approvedStatus', { approvedStatus: EventStatus.APROVADO });
+    const events = await this.eventRepository.find({
+      where: {
+        eventDate: Between(startDate, endDate),
+        visibility: EventVisibility.ABERTO,
+        status: EventStatus.APROVADO
+      },
+      relations: ['createdBy', 'eventType', 'eventRepublics', 'eventRepublics.republic'],
+      order: { eventDate: 'ASC' }
+    });
 
-    // Condições de visibilidade:
-    // 1. Eventos públicos (abertos)
-    // 2. Eventos criados pelo próprio usuário
-    // 3. Eventos para os quais o usuário foi convidado
-    // 4. Eventos de repúblicas das quais o usuário faz parte
-    queryBuilder.andWhere(
-      `(
-        event.visibility = :publicVisibility OR
-        event.created_by_id = :userId OR
-        EXISTS (
-          SELECT 1 FROM event_invites ei 
-          WHERE ei.event_id = event.id AND ei.user_id = :userId
-        ) OR
-        EXISTS (
-          SELECT 1 FROM event_republics er
-          INNER JOIN users u ON er.republic_id = u.republic_id
-          WHERE er.event_id = event.id AND u.id = :userId
-        )
-      )`,
-      {
-        publicVisibility: EventVisibility.ABERTO,
-        userId: userId
-      }
-    );
-
-    return await queryBuilder
-      .orderBy('event.eventDate', 'ASC')
-      .addOrderBy('event.eventTime', 'ASC')
-      .getMany();
+    return events.map(event => this.transformEventToResponseDto(event));
   }
 
-  async updateEvent(id: string, updateEventDto: UpdateEventDto): Promise<Event> {
-    const event = await this.findEventById(id);
+  async updateEvent(id: string, updateEventDto: UpdateEventDto): Promise<EventResponseDto> {
+    const event = await this.eventRepository.findOne({
+      where: { id },
+      relations: ['createdBy', 'eventType', 'eventRepublics', 'eventRepublics.republic'],
+    });
+
+    if (!event) {
+      throw new NotFoundException(`Evento com ID ${id} não encontrado`);
+    }
+
     Object.assign(event, updateEventDto);
     await this.eventRepository.save(event);
-    return await this.findEventById(id);
+    return this.transformEventToResponseDto(event);
   }
 
-  async updateEventStatus(id: string, updateEventStatusDto: UpdateEventStatusDto): Promise<Event> {
-    const event = await this.findEventById(id);
+  async updateEventStatus(id: string, updateEventStatusDto: UpdateEventStatusDto): Promise<EventResponseDto> {
+    const event = await this.eventRepository.findOne({
+      where: { id },
+      relations: ['createdBy', 'eventType', 'eventRepublics', 'eventRepublics.republic'],
+    });
+
+    if (!event) {
+      throw new NotFoundException(`Evento com ID ${id} não encontrado`);
+    }
     
     if (updateEventStatusDto.status === EventStatus.REJEITADO && !updateEventStatusDto.rejectionReason) {
       throw new BadRequestException('Motivo da rejeição é obrigatório quando o evento é rejeitado');
     }
     
     event.status = updateEventStatusDto.status;
+    
     if (updateEventStatusDto.rejectionReason) {
       event.rejectionReason = updateEventStatusDto.rejectionReason;
     }
     
     await this.eventRepository.save(event);
-    return await this.findEventById(id);
+    return this.transformEventToResponseDto(event);
   }
 
   async deleteEvent(id: string): Promise<void> {

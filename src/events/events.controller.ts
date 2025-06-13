@@ -24,6 +24,8 @@ import { InviteRepublicsDto } from './dto/invite-republics.dto';
 import { InviteUsersDto } from './dto/invite-users.dto';
 import { EventsByMonthDto } from './dto/events-by-month.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { EventResponseDto } from './dto/event-response.dto';
+import { EventType } from './entities/event-type.entity';
 
 @ApiTags('events')
 @Controller('events')
@@ -35,41 +37,47 @@ export class EventsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Criar novo tipo de evento' })
-  @ApiResponse({ status: 201, description: 'Tipo de evento criado com sucesso' })
+  @ApiResponse({ status: 201, description: 'Tipo de evento criado com sucesso', type: EventType })
   @ApiResponse({ status: 400, description: 'Dados inválidos ou nome de tipo de evento já existe' })
   @ApiResponse({ status: 401, description: 'Token de autenticação necessário' })
-  createEventType(@Body() createEventTypeDto: CreateEventTypeDto) {
+  createEventType(@Body() createEventTypeDto: CreateEventTypeDto): Promise<EventType> {
     return this.eventsService.createEventType(createEventTypeDto);
   }
 
   @Get('types')
   @ApiOperation({ summary: 'Listar todos os tipos de evento' })
-  @ApiResponse({ status: 200, description: 'Lista de tipos de evento' })
-  findAllEventTypes() {
+  @ApiResponse({ status: 200, description: 'Lista de tipos de evento', type: [EventType] })
+  findAllEventTypes(): Promise<EventType[]> {
     return this.eventsService.findAllEventTypes();
   }
 
   @Get('types/:id')
   @ApiOperation({ summary: 'Buscar tipo de evento por ID' })
-  @ApiResponse({ status: 200, description: 'Tipo de evento encontrado' })
+  @ApiResponse({ status: 200, description: 'Tipo de evento encontrado', type: EventType })
   @ApiResponse({ status: 404, description: 'Tipo de evento não encontrado' })
-  findEventType(@Param('id') id: string) {
+  findEventType(@Param('id') id: string): Promise<EventType> {
     return this.eventsService.findEventTypeById(id);
   }
 
   @Patch('types/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar tipo de evento' })
-  @ApiResponse({ status: 200, description: 'Tipo de evento atualizado com sucesso' })
+  @ApiResponse({ status: 200, description: 'Tipo de evento atualizado com sucesso', type: EventType })
   @ApiResponse({ status: 404, description: 'Tipo de evento não encontrado' })
-  updateEventType(@Param('id') id: string, @Body() updateEventTypeDto: UpdateEventTypeDto) {
+  @ApiResponse({ status: 401, description: 'Token de autenticação necessário' })
+  updateEventType(@Param('id') id: string, @Body() updateEventTypeDto: UpdateEventTypeDto): Promise<EventType> {
     return this.eventsService.updateEventType(id, updateEventTypeDto);
   }
 
   @Delete('types/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Deletar tipo de evento' })
   @ApiResponse({ status: 200, description: 'Tipo de evento deletado com sucesso' })
   @ApiResponse({ status: 404, description: 'Tipo de evento não encontrado' })
-  deleteEventType(@Param('id') id: string) {
+  @ApiResponse({ status: 401, description: 'Token de autenticação necessário' })
+  deleteEventType(@Param('id') id: string): Promise<void> {
     return this.eventsService.deleteEventType(id);
   }
 
@@ -78,39 +86,59 @@ export class EventsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Criar novo evento' })
-  @ApiResponse({ status: 201, description: 'Evento criado com sucesso' })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Evento criado com sucesso',
+    type: EventResponseDto
+  })
   @ApiResponse({ status: 400, description: 'Dados inválidos ou regras de negócio violadas' })
   @ApiResponse({ status: 401, description: 'Token de autenticação necessário' })
-  createEvent(@Body() createEventDto: CreateEventDto, @Request() req) {
+  createEvent(@Body() createEventDto: CreateEventDto, @Request() req): Promise<EventResponseDto> {
     const userId = req.user.userId;
     return this.eventsService.createEvent(createEventDto, userId);
   }
 
   @Get()
   @ApiOperation({ summary: 'Listar todos os eventos' })
-  @ApiResponse({ status: 200, description: 'Lista de eventos' })
-  findAllEvents() {
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de eventos',
+    type: [EventResponseDto]
+  })
+  findAllEvents(): Promise<EventResponseDto[]> {
     return this.eventsService.findAllEvents();
   }
 
   @Get('public')
   @ApiOperation({ summary: 'Listar eventos públicos aprovados' })
-  @ApiResponse({ status: 200, description: 'Lista de eventos públicos' })
-  findPublicEvents() {
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de eventos públicos',
+    type: [EventResponseDto]
+  })
+  findPublicEvents(): Promise<EventResponseDto[]> {
     return this.eventsService.findPublicEvents();
   }
 
   @Get('republic/:republicId')
   @ApiOperation({ summary: 'Listar eventos de uma república' })
-  @ApiResponse({ status: 200, description: 'Lista de eventos da república' })
-  findEventsByRepublic(@Param('republicId') republicId: string) {
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de eventos da república',
+    type: [EventResponseDto]
+  })
+  findEventsByRepublic(@Param('republicId') republicId: string): Promise<EventResponseDto[]> {
     return this.eventsService.findEventsByRepublic(republicId);
   }
 
   @Get('user/:userId')
   @ApiOperation({ summary: 'Listar eventos criados por um usuário' })
-  @ApiResponse({ status: 200, description: 'Lista de eventos do usuário' })
-  findEventsByUser(@Param('userId') userId: string) {
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de eventos do usuário',
+    type: [EventResponseDto]
+  })
+  findEventsByUser(@Param('userId') userId: string): Promise<EventResponseDto[]> {
     return this.eventsService.findEventsByUser(userId);
   }
 
@@ -122,84 +150,45 @@ export class EventsController {
   }
 
   @Get('visible/month/:year/:month')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Listar eventos visíveis a um usuário em um mês específico' })
+  @ApiOperation({ summary: 'Listar eventos visíveis por mês' })
   @ApiResponse({ 
     status: 200, 
-    description: 'Lista de eventos visíveis ao usuário no mês especificado',
-    schema: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          id: { type: 'string', format: 'uuid' },
-          name: { type: 'string' },
-          description: { type: 'string' },
-          eventDate: { type: 'string', format: 'date' },
-          eventTime: { type: 'string' },
-          location: { type: 'string' },
-          mediaUrl: { type: 'string' },
-          visibility: { type: 'string', enum: ['aberto', 'fechado'] },
-          status: { type: 'string', enum: ['pendente', 'aprovado', 'rejeitado'] }
-        }
-      }
-    }
-  })
-  @ApiResponse({ 
-    status: 400, 
-    description: 'Parâmetros inválidos (ano ou mês fora do intervalo permitido)' 
-  })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'Token de autenticação necessário' 
+    description: 'Lista de eventos visíveis do mês', 
+    type: [EventResponseDto] 
   })
   findVisibleEventsByMonth(
-    @Param('year') year: string,
-    @Param('month') month: string,
-    @Query('userId') userId?: string,
-    @Request() req?
-  ) {
-    const yearNum = parseInt(year);
-    const monthNum = parseInt(month);
-    
-    // Validação básica dos parâmetros
-    if (isNaN(yearNum) || isNaN(monthNum) || yearNum < 2020 || yearNum > 2030 || monthNum < 1 || monthNum > 12) {
-      throw new BadRequestException('Ano deve estar entre 2020-2030 e mês entre 1-12');
-    }
-    
-    // Usar userId do query param ou do usuário autenticado (prioriza o usuário autenticado por segurança)
-    const targetUserId = userId || req?.user?.id;
-    
-    if (!targetUserId) {
-      throw new BadRequestException('User ID é obrigatório');
-    }
-    
-    return this.eventsService.findVisibleEventsByMonth(targetUserId, yearNum, monthNum);
+    @Param('year') year: number,
+    @Param('month') month: number
+  ): Promise<EventResponseDto[]> {
+    return this.eventsService.findVisibleEventsByMonth(year, month);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Buscar evento por ID' })
-  @ApiResponse({ status: 200, description: 'Evento encontrado' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Evento encontrado',
+    type: EventResponseDto
+  })
   @ApiResponse({ status: 404, description: 'Evento não encontrado' })
-  findEvent(@Param('id') id: string) {
+  findEvent(@Param('id') id: string): Promise<EventResponseDto> {
     return this.eventsService.findEventById(id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Atualizar evento' })
-  @ApiResponse({ status: 200, description: 'Evento atualizado com sucesso' })
+  @ApiResponse({ status: 200, description: 'Evento atualizado com sucesso', type: EventResponseDto })
   @ApiResponse({ status: 404, description: 'Evento não encontrado' })
-  updateEvent(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
+  updateEvent(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto): Promise<EventResponseDto> {
     return this.eventsService.updateEvent(id, updateEventDto);
   }
 
   @Patch(':id/status')
   @ApiOperation({ summary: 'Atualizar status do evento (aprovar/rejeitar)' })
-  @ApiResponse({ status: 200, description: 'Status do evento atualizado com sucesso' })
+  @ApiResponse({ status: 200, description: 'Status do evento atualizado com sucesso', type: EventResponseDto })
   @ApiResponse({ status: 400, description: 'Status inválido ou motivo de rejeição obrigatório' })
   @ApiResponse({ status: 404, description: 'Evento não encontrado' })
-  updateEventStatus(@Param('id') id: string, @Body() updateEventStatusDto: UpdateEventStatusDto) {
+  updateEventStatus(@Param('id') id: string, @Body() updateEventStatusDto: UpdateEventStatusDto): Promise<EventResponseDto> {
     return this.eventsService.updateEventStatus(id, updateEventStatusDto);
   }
 
@@ -207,7 +196,7 @@ export class EventsController {
   @ApiOperation({ summary: 'Deletar evento' })
   @ApiResponse({ status: 200, description: 'Evento deletado com sucesso' })
   @ApiResponse({ status: 404, description: 'Evento não encontrado' })
-  deleteEvent(@Param('id') id: string) {
+  deleteEvent(@Param('id') id: string): Promise<void> {
     return this.eventsService.deleteEvent(id);
   }
 

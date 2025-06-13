@@ -90,8 +90,8 @@ export class Event {
     example: 'Data conflita com outro evento',
     required: false
   })
-  @Column({ type: 'text', nullable: true })
-  rejectionReason: string;
+  @Column({ nullable: true })
+  rejectionReason: string | null;
 
   @ApiProperty({
     description: 'Usuário criador do evento',
