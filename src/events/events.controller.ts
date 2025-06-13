@@ -32,8 +32,12 @@ export class EventsController {
 
   // Event Type routes
   @Post('types')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Criar novo tipo de evento' })
   @ApiResponse({ status: 201, description: 'Tipo de evento criado com sucesso' })
+  @ApiResponse({ status: 400, description: 'Dados inválidos ou nome de tipo de evento já existe' })
+  @ApiResponse({ status: 401, description: 'Token de autenticação necessário' })
   createEventType(@Body() createEventTypeDto: CreateEventTypeDto) {
     return this.eventsService.createEventType(createEventTypeDto);
   }
@@ -71,12 +75,14 @@ export class EventsController {
 
   // Event routes
   @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Criar novo evento' })
   @ApiResponse({ status: 201, description: 'Evento criado com sucesso' })
   @ApiResponse({ status: 400, description: 'Dados inválidos ou regras de negócio violadas' })
+  @ApiResponse({ status: 401, description: 'Token de autenticação necessário' })
   createEvent(@Body() createEventDto: CreateEventDto, @Request() req) {
-    // Assumindo que o middleware de autenticação adiciona user.id ao request
-    const userId = req.user?.id || 'user-placeholder';
+    const userId = req.user.userId;
     return this.eventsService.createEvent(createEventDto, userId);
   }
 

@@ -33,6 +33,7 @@ services:
       - DB_DATABASE=rumon
       - NODE_ENV=development
       - JWT_SECRET=desenvolvimento_jwt_secret_local
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
     depends_on:
       postgres:
         condition: service_healthy

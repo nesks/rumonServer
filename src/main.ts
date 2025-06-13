@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { ErrorLoggingInterceptor } from './common/interceptors/error-logging.interceptor';
+import { DiscordLoggerService } from './common/services/discord-logger.service';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -19,8 +21,12 @@ async function bootstrap() {
     },
   }));
 
-  // Interceptor global para logging de erros 500
-  app.useGlobalInterceptors(new ErrorLoggingInterceptor());
+  // Filtro global de exceções
+  app.useGlobalFilters(new HttpExceptionFilter());
+
+  // Interceptor global para logging de erros 500 (incluindo envio para Discord)
+  const discordLogger = app.get(DiscordLoggerService);
+  app.useGlobalInterceptors(new ErrorLoggingInterceptor(discordLogger));
 
   // Configuração do CORS
   app.enableCors({

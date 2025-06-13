@@ -15,12 +15,14 @@ import { EventRepublic } from './events/entities/event-republic.entity';
 import { EventInvite } from './events/entities/event-invite.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    CommonModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {

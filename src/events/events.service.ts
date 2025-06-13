@@ -31,8 +31,15 @@ export class EventsService {
 
   // EventType methods
   async createEventType(createEventTypeDto: CreateEventTypeDto): Promise<EventType> {
-    const eventType = this.eventTypeRepository.create(createEventTypeDto);
-    return await this.eventTypeRepository.save(eventType);
+    try {
+      const eventType = this.eventTypeRepository.create(createEventTypeDto);
+      return await this.eventTypeRepository.save(eventType);
+    } catch (error) {
+      if (error.code === '23505' && error.constraint === 'UQ_d5110ab69f4aacfe41fecdf4fcd') {
+        throw new BadRequestException(`Já existe um tipo de evento com o nome "${createEventTypeDto.name}". Por favor, escolha outro nome.`);
+      }
+      throw error;
+    }
   }
 
   async findAllEventTypes(): Promise<EventType[]> {

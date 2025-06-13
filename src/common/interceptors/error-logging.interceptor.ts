@@ -9,10 +9,13 @@ import {
 } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { DiscordLoggerService } from '../services/discord-logger.service';
 
 @Injectable()
 export class ErrorLoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger(ErrorLoggingInterceptor.name);
+
+  constructor(private discordLogger: DiscordLoggerService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
@@ -72,6 +75,11 @@ export class ErrorLoggingInterceptor implements NestInterceptor {
               }, null, 2)
             );
           }
+          
+          // Enviar para o Discord
+          this.discordLogger.logError(error, request, 'API Server Error').catch(err => {
+            this.logger.error(`Falha ao enviar para Discord: ${err.message}`);
+          });
         }
 
         // Se não for uma HttpException, transforme em 500
