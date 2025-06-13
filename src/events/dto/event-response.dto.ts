@@ -2,10 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { EventVisibility, EventStatus } from '../entities/event.entity';
 
 class UserResponseDto {
-  @ApiProperty({ example: 'fd36f7cd-6e48-40b8-8f50-a7c29a34bfcb' })
+  @ApiProperty({ example: '3fa85f64-5717-4562-b3fc-2c963f66afa6' })
   id: string;
 
-  @ApiProperty({ example: 'nesks' })
+  @ApiProperty({ example: 'João Silva' })
   apelido: string;
 
   @ApiProperty({ example: 'https://exemplo.com/foto.jpg' })
@@ -13,21 +13,21 @@ class UserResponseDto {
 }
 
 class EventTypeResponseDto {
-  @ApiProperty({ example: '6389d3b2-e5b3-4ec4-b818-811a21fb5acc' })
+  @ApiProperty({ example: '3fa85f64-5717-4562-b3fc-2c963f66afa6' })
   id: string;
 
-  @ApiProperty({ example: 'rock' })
+  @ApiProperty({ example: 'Festa' })
   name: string;
 
-  @ApiProperty({ example: '#FF6B6B' })
+  @ApiProperty({ example: '#FF0000' })
   color: string;
 }
 
 class RepublicResponseDto {
-  @ApiProperty({ example: 'b86ffa63-a5d0-42c0-a2cf-62f4c638680c' })
+  @ApiProperty({ example: '3fa85f64-5717-4562-b3fc-2c963f66afa6' })
   id: string;
 
-  @ApiProperty({ example: 'Alambique' })
+  @ApiProperty({ example: 'República dos Artistas' })
   name: string;
 
   @ApiProperty({ example: 'https://exemplo.com/foto.jpg' })
@@ -35,65 +35,56 @@ class RepublicResponseDto {
 }
 
 class EventRepublicResponseDto {
-  @ApiProperty({ example: '42d7381d-7469-4ebb-baa4-f513544298d8' })
+  @ApiProperty({ example: '3fa85f64-5717-4562-b3fc-2c963f66afa6' })
   id: string;
 
-  @ApiProperty({ type: () => RepublicResponseDto })
+  @ApiProperty({ type: RepublicResponseDto })
   republic: RepublicResponseDto;
 }
 
 export class EventResponseDto {
-  @ApiProperty({ example: 'd2e0f37b-670c-45d2-a6ab-ddc8d9d76471' })
+  @ApiProperty({ example: '3fa85f64-5717-4562-b3fc-2c963f66afa6' })
   id: string;
 
-  @ApiProperty({ example: 'Teste' })
+  @ApiProperty({ example: 'Festa de Aniversário' })
   name: string;
 
-  @ApiProperty({ example: 'Teste' })
+  @ApiProperty({ example: 'Venha celebrar conosco!' })
   description: string;
 
-  @ApiProperty({ example: '2025-06-22' })
+  @ApiProperty({ example: '2024-03-15' })
   eventDate: Date;
 
-  @ApiProperty({ example: '21:00:00' })
+  @ApiProperty({ example: '19:00' })
   eventTime: string;
 
-  @ApiProperty({ example: 'Teste' })
+  @ApiProperty({ example: 'Rua das Flores, 123' })
   location: string;
 
-  @ApiProperty({ example: 'https://exemplo.com/foto.jpg' })
+  @ApiProperty({ example: 'https://exemplo.com/foto.jpg', nullable: true })
   mediaUrl: string;
 
   @ApiProperty({ enum: EventVisibility, example: EventVisibility.ABERTO })
   visibility: EventVisibility;
 
-  @ApiProperty({ enum: EventStatus, example: EventStatus.PENDENTE })
+  @ApiProperty({ enum: EventStatus, example: EventStatus.APROVADO })
   status: EventStatus;
 
-  @ApiProperty({ example: null })
-  rejectionReason: string | null;
+  @ApiProperty({ example: 'Evento não atende aos critérios', nullable: true })
+  rejectionReason: string;
 
-  @ApiProperty({ type: () => UserResponseDto })
+  @ApiProperty({ type: UserResponseDto })
   createdBy: UserResponseDto;
 
-  @ApiProperty({ example: 'fd36f7cd-6e48-40b8-8f50-a7c29a34bfcb' })
-  created_by_id: string;
-
-  @ApiProperty({ type: () => EventTypeResponseDto })
+  @ApiProperty({ type: EventTypeResponseDto })
   eventType: EventTypeResponseDto;
 
-  @ApiProperty({ example: '6389d3b2-e5b3-4ec4-b818-811a21fb5acc' })
-  event_type_id: string;
-
-  @ApiProperty({ type: () => [EventRepublicResponseDto] })
+  @ApiProperty({ type: [EventRepublicResponseDto] })
   eventRepublics: EventRepublicResponseDto[];
 
-  @ApiProperty({ type: () => [] })
-  eventInvites: any[];
-
-  @ApiProperty({ example: '2025-06-13T22:28:11.147Z' })
+  @ApiProperty({ example: '2024-03-15T19:00:00Z' })
   createdAt: Date;
 
-  @ApiProperty({ example: '2025-06-13T22:28:11.147Z' })
+  @ApiProperty({ example: '2024-03-15T19:00:00Z' })
   updatedAt: Date;
 } 

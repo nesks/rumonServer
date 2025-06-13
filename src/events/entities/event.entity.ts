@@ -91,7 +91,7 @@ export class Event {
     required: false
   })
   @Column({ nullable: true })
-  rejectionReason: string | null;
+  rejectionReason: string;
 
   @ApiProperty({
     description: 'Usuário criador do evento',
