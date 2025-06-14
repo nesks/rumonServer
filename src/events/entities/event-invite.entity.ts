@@ -5,8 +5,7 @@ import { User } from '../../users/entities/user.entity';
 
 export enum InviteStatus {
   PENDENTE = 'pendente',
-  INTERESSADO = 'interessado',
-  CONFIRMADO = 'confirmado',
+  ACEITO = 'aceito',
   RECUSADO = 'recusado'
 }
 
@@ -46,7 +45,11 @@ export class EventInvite {
     enum: InviteStatus,
     example: 'pendente'
   })
-  @Column({ type: 'enum', enum: InviteStatus, default: InviteStatus.PENDENTE })
+  @Column({
+    type: 'enum',
+    enum: InviteStatus,
+    default: InviteStatus.PENDENTE
+  })
   status: InviteStatus;
 
   @ApiProperty({

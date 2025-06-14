@@ -150,17 +150,21 @@ export class EventsController {
   }
 
   @Get('visible/month/:year/:month')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Listar eventos visíveis por mês' })
   @ApiResponse({ 
     status: 200, 
     description: 'Lista de eventos visíveis do mês', 
     type: [EventResponseDto] 
   })
+  @ApiResponse({ status: 401, description: 'Não autorizado' })
   findVisibleEventsByMonth(
     @Param('year') year: number,
-    @Param('month') month: number
+    @Param('month') month: number,
+    @Request() req
   ): Promise<EventResponseDto[]> {
-    return this.eventsService.findVisibleEventsByMonth(year, month);
+    return this.eventsService.findVisibleEventsByMonth(req.user.userId, year, month);
   }
 
   @Get(':id')

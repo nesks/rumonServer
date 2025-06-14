@@ -200,19 +200,41 @@ export class EventsService {
     return events.map(event => this.transformEventToResponseDto(event));
   }
 
-  async findVisibleEventsByMonth(year: number, month: number): Promise<EventResponseDto[]> {
+  async findVisibleEventsByMonth(userId: string, year: number, month: number): Promise<EventResponseDto[]> {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
 
-    const events = await this.eventRepository.find({
-      where: {
-        eventDate: Between(startDate, endDate),
-        visibility: EventVisibility.ABERTO,
-        status: EventStatus.APROVADO
-      },
-      relations: ['createdBy', 'eventType', 'eventRepublics', 'eventRepublics.republic'],
-      order: { eventDate: 'ASC' }
-    });
+    const events = await this.eventRepository
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.createdBy', 'createdBy')
+      .leftJoinAndSelect('event.eventType', 'eventType')
+      .leftJoinAndSelect('event.eventRepublics', 'eventRepublics')
+      .leftJoinAndSelect('eventRepublics.republic', 'republic')
+      .leftJoinAndSelect('event.eventInvites', 'eventInvites')
+      .where('event.eventDate >= :startDate', { startDate: startDate.toISOString().split('T')[0] })
+      .andWhere('event.eventDate <= :endDate', { endDate: endDate.toISOString().split('T')[0] })
+      .andWhere('event.status IN (:...statuses)', { 
+        statuses: [EventStatus.APROVADO, EventStatus.PENDENTE] 
+      })
+      .andWhere(
+        `(
+          event.visibility = :publicVisibility OR
+          EXISTS (
+            SELECT 1 FROM event_invites ei 
+            WHERE ei.event_id = event.id 
+            AND ei.user_id = :userId 
+            AND ei.status = :acceptedStatus
+          )
+        )`,
+        {
+          publicVisibility: EventVisibility.ABERTO,
+          userId: userId,
+          acceptedStatus: InviteStatus.ACEITO
+        }
+      )
+      .orderBy('event.eventDate', 'ASC')
+      .addOrderBy('event.eventTime', 'ASC')
+      .getMany();
 
     return events.map(event => this.transformEventToResponseDto(event));
   }
