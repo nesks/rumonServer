@@ -15,6 +15,8 @@ import { UpdateInviteStatusDto } from './dto/update-invite-status.dto';
 import { InviteBatchDto } from './dto/invite-batch.dto';
 import { EventResponseDto } from './dto/event-response.dto';
 import { Between } from 'typeorm';
+import { FeedService } from '../feed/feed.service';
+import { PostType, PostVisibility } from '../feed/entities/post.entity';
 
 @Injectable()
 export class EventsService {
@@ -29,6 +31,7 @@ export class EventsService {
     private eventInviteRepository: Repository<EventInvite>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private feedService: FeedService,
   ) {}
 
   // EventType methods
@@ -76,9 +79,6 @@ export class EventsService {
     // Verificar se o tipo de evento existe
     const eventType = await this.findEventTypeById(createEventDto.event_type_id);
 
-    // Validação de antecedência removida temporariamente
-    // TODO: Reativar validação de monthsInAdvance se necessário no futuro
-
     // Validação: apenas um evento tipo rock por dia
     if (eventType.onePerDay) {
       const existingEvent = await this.eventRepository
@@ -124,6 +124,23 @@ export class EventsService {
         await this.eventInviteRepository.save(eventInvite);
       }
     }
+
+    // Criar post do evento
+    const creator = await this.userRepository.findOne({ where: { id: userId } });
+    if (!creator) {
+      throw new NotFoundException('Usuário criador não encontrado');
+    }
+
+    // Criar o post com base na visibilidade do evento
+    const postData = {
+      type: PostType.IMAGE,
+      content: `${eventData.name}\n\n${eventData.description || ''}\n\nData: ${new Date(eventData.eventDate).toLocaleDateString()}\nHorário: ${eventData.eventTime}\nLocal: ${eventData.location}`,
+      mediaUrl: eventData.mediaUrl,
+      visibility: eventData.visibility === EventVisibility.ABERTO ? PostVisibility.ALL : PostVisibility.USERS,
+      visibleUserIds: invited_user_ids,
+    };
+
+    await this.feedService.createPost(creator, postData);
 
     return await this.findEventById(savedEvent.id);
   }

@@ -16,6 +16,11 @@ import { EventInvite } from './events/entities/event-invite.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CommonModule } from './common/common.module';
+import { FeedModule } from './feed/feed.module';
+import { Post } from './feed/entities/post.entity';
+import { Comment } from './feed/entities/comment.entity';
+import { PostLike } from './feed/entities/post-like.entity';
+import { CommentLike } from './feed/entities/comment-like.entity';
 
 @Module({
   imports: [
@@ -33,7 +38,20 @@ import { CommonModule } from './common/common.module';
           return {
             type: 'postgres',
             url: databaseUrl,
-            entities: [User, Republic, Casa, UserSocialMedia, Event, EventType, EventRepublic, EventInvite],
+            entities: [
+              User, 
+              Republic, 
+              Casa, 
+              UserSocialMedia, 
+              Event, 
+              EventType, 
+              EventRepublic, 
+              EventInvite,
+              Post,
+              Comment,
+              PostLike,
+              CommentLike
+            ],
             migrations: ['dist/migrations/*.js'],
             migrationsRun: false,
             synchronize: configService.get('NODE_ENV') !== 'production',
@@ -49,7 +67,20 @@ import { CommonModule } from './common/common.module';
           username: configService.get('DB_USERNAME', 'postgres'),
           password: configService.get('DB_PASSWORD', 'postgres'),
           database: configService.get('DB_DATABASE', 'rumon'),
-          entities: [User, Republic, Casa, UserSocialMedia, Event, EventType, EventRepublic, EventInvite],
+          entities: [
+            User, 
+            Republic, 
+            Casa, 
+            UserSocialMedia, 
+            Event, 
+            EventType, 
+            EventRepublic, 
+            EventInvite,
+            Post,
+            Comment,
+            PostLike,
+            CommentLike
+          ],
           migrations: ['dist/migrations/*.js'],
           migrationsRun: false,
           synchronize: configService.get('NODE_ENV') !== 'production',
@@ -61,6 +92,7 @@ import { CommonModule } from './common/common.module';
     AuthModule,
     RepublicsModule,
     EventsModule,
+    FeedModule,
   ],
   controllers: [AppController],
   providers: [AppService],
