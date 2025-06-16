@@ -63,7 +63,19 @@ export class FeedService {
       post,
     });
 
-    return this.commentRepository.save(comment);
+    const savedComment = await this.commentRepository.save(comment);
+    
+    // Carregar o comentário com as relações necessárias
+    const commentWithRelations = await this.commentRepository.findOne({
+      where: { id: savedComment.id },
+      relations: ['author', 'post'],
+    });
+
+    if (!commentWithRelations) {
+      throw new NotFoundException('Erro ao criar comentário');
+    }
+
+    return commentWithRelations;
   }
 
   async deleteComment(user: User, commentId: string): Promise<void> {
@@ -92,17 +104,23 @@ export class FeedService {
       throw new NotFoundException('Post não encontrado');
     }
 
-    const existingLike = await this.postLikeRepository.findOne({
-      where: {
-        user: { id: user.id },
-        post: { id: postId },
-      },
-      relations: ['user', 'post'],
-    });
+    // Verificar se já existe um like
+    const existingLike = await this.postLikeRepository
+      .createQueryBuilder('like')
+      .where('like.userId = :userId', { userId: user.id })
+      .andWhere('like.postId = :postId', { postId })
+      .getOne();
 
     if (existingLike) {
-      await this.postLikeRepository.remove(existingLike);
+      // Se existir, deletar usando query builder
+      await this.postLikeRepository
+        .createQueryBuilder()
+        .delete()
+        .where('userId = :userId', { userId: user.id })
+        .andWhere('postId = :postId', { postId })
+        .execute();
     } else {
+      // Se não existir, criar novo like
       const like = this.postLikeRepository.create({
         user,
         post,
@@ -120,17 +138,23 @@ export class FeedService {
       throw new NotFoundException('Comentário não encontrado');
     }
 
-    const existingLike = await this.commentLikeRepository.findOne({
-      where: {
-        user: { id: user.id },
-        comment: { id: commentId },
-      },
-      relations: ['user', 'comment'],
-    });
+    // Verificar se já existe um like
+    const existingLike = await this.commentLikeRepository
+      .createQueryBuilder('like')
+      .where('like.userId = :userId', { userId: user.id })
+      .andWhere('like.commentId = :commentId', { commentId })
+      .getOne();
 
     if (existingLike) {
-      await this.commentLikeRepository.remove(existingLike);
+      // Se existir, deletar usando query builder
+      await this.commentLikeRepository
+        .createQueryBuilder()
+        .delete()
+        .where('userId = :userId', { userId: user.id })
+        .andWhere('commentId = :commentId', { commentId })
+        .execute();
     } else {
+      // Se não existir, criar novo like
       const like = this.commentLikeRepository.create({
         user,
         comment,
