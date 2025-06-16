@@ -86,17 +86,22 @@ export class FeedService {
   async togglePostLike(user: User, postId: string): Promise<void> {
     const post = await this.postRepository.findOne({
       where: { id: postId },
-      relations: ['likes', 'likes.user'],
     });
 
     if (!post) {
       throw new NotFoundException('Post não encontrado');
     }
 
-    const existingLike = post.likes.find(like => like.user.id === user.id);
+    const existingLike = await this.postLikeRepository.findOne({
+      where: {
+        user: { id: user.id },
+        post: { id: postId },
+      },
+      relations: ['user', 'post'],
+    });
 
     if (existingLike) {
-      await this.postLikeRepository.delete(existingLike.id);
+      await this.postLikeRepository.remove(existingLike);
     } else {
       const like = this.postLikeRepository.create({
         user,
@@ -109,17 +114,22 @@ export class FeedService {
   async toggleCommentLike(user: User, commentId: string): Promise<void> {
     const comment = await this.commentRepository.findOne({
       where: { id: commentId },
-      relations: ['likes', 'likes.user'],
     });
 
     if (!comment) {
       throw new NotFoundException('Comentário não encontrado');
     }
 
-    const existingLike = comment.likes.find(like => like.user.id === user.id);
+    const existingLike = await this.commentLikeRepository.findOne({
+      where: {
+        user: { id: user.id },
+        comment: { id: commentId },
+      },
+      relations: ['user', 'comment'],
+    });
 
     if (existingLike) {
-      await this.commentLikeRepository.delete(existingLike.id);
+      await this.commentLikeRepository.remove(existingLike);
     } else {
       const like = this.commentLikeRepository.create({
         user,
