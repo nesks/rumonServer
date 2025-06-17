@@ -109,12 +109,13 @@ export class FeedService {
       where: {
         user: { id: user.id },
         post: { id: postId }
-      }
+      },
+      relations: ['user', 'post']
     });
 
     if (existingLike) {
-      // Se existir, deletar usando softDelete
-      await this.postLikeRepository.softDelete(existingLike.id);
+      // Se existir, remover o like
+      await this.postLikeRepository.remove(existingLike);
     } else {
       // Se não existir, criar novo like
       const like = this.postLikeRepository.create({
