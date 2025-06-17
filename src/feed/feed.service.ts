@@ -68,7 +68,33 @@ export class FeedService {
     // Carregar o comentário com as relações necessárias
     const commentWithRelations = await this.commentRepository.findOne({
       where: { id: savedComment.id },
-      relations: ['author', 'post'],
+      relations: ['author', 'post', 'post.author'],
+      select: {
+        id: true,
+        content: true,
+        emoticons: true,
+        createdAt: true,
+        updatedAt: true,
+        deletedAt: true,
+        author: {
+          id: true,
+          name: true,
+          email: true,
+          linkfotoPerfil: true
+        },
+        post: {
+          id: true,
+          type: true,
+          content: true,
+          mediaUrl: true,
+          author: {
+            id: true,
+            name: true,
+            email: true,
+            linkfotoPerfil: true
+          }
+        }
+      }
     });
 
     if (!commentWithRelations) {
