@@ -9,7 +9,9 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
   
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'debug', 'log', 'verbose'],
+  });
 
   // Configuração global do ValidationPipe para aplicar transformações
   app.useGlobalPipes(new ValidationPipe({

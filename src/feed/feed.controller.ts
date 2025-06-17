@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Post as PostEntity } from './entities/post.entity';
 import { Comment as CommentEntity } from './entities/comment.entity';
+import { FeedResponseDto } from './dto/feed-response.dto';
 
 @ApiTags('feed')
 @ApiBearerAuth()
@@ -59,10 +60,22 @@ export class FeedController {
 
   @Post('posts/:id/like')
   @ApiOperation({ summary: 'Curtir/descurtir uma postagem' })
-  @ApiResponse({ status: 200, description: 'Operação realizada com sucesso' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Operação realizada com sucesso',
+    schema: {
+      type: 'object',
+      properties: {
+        liked: {
+          type: 'boolean',
+          description: 'Indica se o post está curtido após a operação'
+        }
+      }
+    }
+  })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
   @ApiResponse({ status: 404, description: 'Postagem não encontrada' })
-  togglePostLike(@Request() req, @Param('id') id: string) {
+  async togglePostLike(@Request() req, @Param('id') id: string) {
     return this.feedService.togglePostLike(req.user, id);
   }
 
@@ -77,7 +90,77 @@ export class FeedController {
 
   @Get()
   @ApiOperation({ summary: 'Obter o feed do usuário' })
-  @ApiResponse({ status: 200, description: 'Feed retornado com sucesso', type: [PostEntity] })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Feed retornado com sucesso', 
+    type: [FeedResponseDto],
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          type: { type: 'string' },
+          content: { type: 'string' },
+          mediaUrl: { type: 'string', nullable: true },
+          visibility: { type: 'string' },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+          author: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              email: { type: 'string' },
+              linkfotoPerfil: { type: 'string', nullable: true }
+            }
+          },
+          likesCount: { type: 'number' },
+          userLiked: { type: 'boolean' },
+          comments: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                content: { type: 'string' },
+                emoticons: { 
+                  type: 'object',
+                  additionalProperties: { type: 'number' }
+                },
+                createdAt: { type: 'string', format: 'date-time' },
+                author: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    name: { type: 'string' },
+                    email: { type: 'string' },
+                    linkfotoPerfil: { type: 'string', nullable: true },
+                    republic: {
+                      type: 'object',
+                      nullable: true,
+                      properties: {
+                        id: { type: 'string' },
+                        name: { type: 'string' }
+                      }
+                    },
+                    periodoIngresso: { 
+                      type: 'string',
+                      description: 'Período de ingresso no formato ano.semestre (ex: 2023.1)'
+                    },
+                    hierarquia: { 
+                      type: 'string',
+                      description: 'Hierarquia do usuário na república'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
   getFeed(@Request() req) {
     return this.feedService.getFeed(req.user);
