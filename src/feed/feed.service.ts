@@ -105,20 +105,16 @@ export class FeedService {
     }
 
     // Verificar se já existe um like
-    const existingLike = await this.postLikeRepository
-      .createQueryBuilder('like')
-      .where('like.userId = :userId', { userId: user.id })
-      .andWhere('like.postId = :postId', { postId })
-      .getOne();
+    const existingLike = await this.postLikeRepository.findOne({
+      where: {
+        user: { id: user.id },
+        post: { id: postId }
+      }
+    });
 
     if (existingLike) {
-      // Se existir, deletar usando query builder
-      await this.postLikeRepository
-        .createQueryBuilder()
-        .delete()
-        .where('userId = :userId', { userId: user.id })
-        .andWhere('postId = :postId', { postId })
-        .execute();
+      // Se existir, deletar usando softDelete
+      await this.postLikeRepository.softDelete(existingLike.id);
     } else {
       // Se não existir, criar novo like
       const like = this.postLikeRepository.create({
@@ -139,20 +135,16 @@ export class FeedService {
     }
 
     // Verificar se já existe um like
-    const existingLike = await this.commentLikeRepository
-      .createQueryBuilder('like')
-      .where('like.userId = :userId', { userId: user.id })
-      .andWhere('like.commentId = :commentId', { commentId })
-      .getOne();
+    const existingLike = await this.commentLikeRepository.findOne({
+      where: {
+        user: { id: user.id },
+        comment: { id: commentId }
+      }
+    });
 
     if (existingLike) {
-      // Se existir, deletar usando query builder
-      await this.commentLikeRepository
-        .createQueryBuilder()
-        .delete()
-        .where('userId = :userId', { userId: user.id })
-        .andWhere('commentId = :commentId', { commentId })
-        .execute();
+      // Se existir, deletar usando softDelete
+      await this.commentLikeRepository.softDelete(existingLike.id);
     } else {
       // Se não existir, criar novo like
       const like = this.commentLikeRepository.create({
