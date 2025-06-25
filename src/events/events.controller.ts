@@ -94,7 +94,7 @@ export class EventsController {
   @ApiResponse({ status: 400, description: 'Dados inválidos ou regras de negócio violadas' })
   @ApiResponse({ status: 401, description: 'Token de autenticação necessário' })
   createEvent(@Body() createEventDto: CreateEventDto, @Request() req): Promise<EventResponseDto> {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     return this.eventsService.createEvent(createEventDto, userId);
   }
 
@@ -164,7 +164,7 @@ export class EventsController {
     @Param('month') month: number,
     @Request() req
   ): Promise<EventResponseDto[]> {
-    return this.eventsService.findVisibleEventsByMonth(req.user.userId, year, month);
+    return this.eventsService.findVisibleEventsByMonth(req.user.id, year, month);
   }
 
   @Get(':id')
